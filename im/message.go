@@ -35,6 +35,9 @@ type Message struct {
 	Expire       uint32        `json:"expire"`              // 消息过期时间
 	IsDeleted    int           `json:"is_deleted"`          // 是否已删除
 	VoiceStatus  int           `json:"voice_status"`        // 语音状态 0.未读 1.已读
+	StreamId     uint64        `json:"stream_id,omitempty"` // 流序号
+	StreamIdStr  string        `json:"stream_idstr,omitempty"`
+	Topic        string        `json:"topic,omitempty"` // 话题ID
 }
 
 type StreamItem struct {
