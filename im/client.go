@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/cloudwego/hertz/pkg/app/client/discovery"
 	"github.com/cloudwego/hertz/pkg/app/middlewares/client/sd"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/hertz-contrib/registry/nacos/v2"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/tidwall/gjson"
 	"net/http"
 )
@@ -53,16 +55,22 @@ type Result struct {
 	Msg    string `json:"msg"`
 }
 
-func NewClient(token string, debug bool) Client {
+func NewClient(token string, debug bool, namingClient naming_client.INamingClient) Client {
 	var err error
 	c := &imClient{token: token, debug: debug}
 	c.cli, err = client.NewClient()
 	if err != nil {
 		panic(err)
 	}
-	resolver, err := nacos.NewDefaultNacosResolver()
-	if err != nil {
-		panic(err)
+	var resolver discovery.Resolver
+	// 使用默认NacosResolver
+	if namingClient == nil {
+		resolver, err = nacos.NewDefaultNacosResolver()
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		resolver = nacos.NewNacosResolver(namingClient)
 	}
 	c.cli.Use(sd.Discovery(resolver))
 	return c
